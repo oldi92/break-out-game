@@ -17,9 +17,12 @@ const PADDLE_MARGIN_BOTTOM = 50;
 let leftArrow;
 let rightArrow;
 const BALL_RADIUS = 8;
-let LIFE = 3;
+//SET LIFE FROM LEVEL 1
+let LIFE = localStorage.getItem("life");
 let bricks = new Array([], []);
-let SCORE = 0;
+//SET SCORE FROM LEVEL 1
+let getScore = localStorage.getItem("score");
+let SCORE = parseInt(getScore, 10);
 let SCORE_UNIT = 10;
 let LEVEL = 1;
 let GAME_OVER = false;
@@ -29,15 +32,19 @@ let MAX_LEVEL = 4;
 
 //SET BACKGROUND IMAGE
 image = new Image();
-image.src = "./images/background.jpg";
-
-//SET BRICK IMAGE
-imageBrick = new Image();
-imageBrick.src = "./images/brick1.png";
+image.src = "./images/level2Background.jpg";
 
 //SET LEVEL IMAGE
 imageLevel = new Image();
 imageLevel.src = "./images/star.png";
+
+//SET BRICK IMAGE
+imageBrick = new Image();
+imageBrick.src = "./images/brick2.png";
+
+//SET BROKEN BRICK IMAGE
+imageBrickBroken = new Image();
+imageBrickBroken.src = "./images/brick2Broken.png";
 
 //SET LIFE IMAGE
 imageLife = new Image();
@@ -72,6 +79,16 @@ const paddle = {
   dx: 5,
 };
 
+//SET BALL
+const ball = {
+  x: cvs.width / 2,
+  y: paddle.y - BALL_RADIUS,
+  radius: BALL_RADIUS,
+  speed: 4,
+  dx: 4 * (Math.random() * 2 - 1),
+  dy: -4,
+};
+
 //SET BRICK
 const brick = {
   row: 1,
@@ -95,7 +112,8 @@ function createBricks() {
           r * (brick.offSetTop + brick.height) +
           brick.offSetTop +
           brick.marginTop,
-        status: true,
+        hit1: true,
+        hit2: true,
       };
     }
   }
@@ -120,22 +138,13 @@ document.addEventListener("keyup", () => {
   }
 });
 
-//SET BALL
-const ball = {
-  x: cvs.width / 2,
-  y: paddle.y - BALL_RADIUS,
-  radius: BALL_RADIUS,
-  speed: 3,
-  dx: 3 * (Math.random() * 2 - 1),
-  dy: -3,
-};
-
 /****************DRAW *************/
 
 //DRAW GAME STATS
 function showGameStats(text, textX, textY, img, imgX, imgY) {
   //draw text
-  (ctx.fillStyle = "#FFF"), (ctx.font = "25px Germania One");
+  ctx.fillStyle = "#FFF";
+  ctx.font = "25px Germania One";
   ctx.fillText(text, textX, textY);
 
   //draw image
@@ -146,9 +155,17 @@ function showGameStats(text, textX, textY, img, imgX, imgY) {
 function drawBricks() {
   for (let r = 0; r < brick.row; r++) {
     for (let c = 0; c < brick.column; c++) {
-      if (bricks[r][c].status) {
+      if (bricks[r][c].hit1) {
         ctx.drawImage(
           imageBrick,
+          bricks[r][c].x,
+          bricks[r][c].y,
+          brick.width,
+          brick.height
+        );
+      } else if (bricks[r][c].hit2) {
+        ctx.drawImage(
+          imageBrickBroken,
           bricks[r][c].x,
           bricks[r][c].y,
           brick.width,
@@ -199,7 +216,19 @@ function moveBall() {
 function ballBricksCollision() {
   for (let r = 0; r < brick.row; r++) {
     for (let c = 0; c < brick.column; c++) {
-      if (bricks[r][c].status) {
+      if (bricks[r][c].hit1) {
+        if (
+          ball.y + ball.radius + 2 > bricks[r][c].y - 2 &&
+          ball.x + ball.radius + 2 > bricks[r][c].x - 2 &&
+          ball.y - ball.radius - 2 < bricks[r][c].y + brick.height + 2 &&
+          ball.x - ball.radius - 2 < bricks[r][c].x + brick.width + 2
+        ) {
+          brickHit.play();
+          ball.dy = -ball.dy;
+          bricks[r][c].hit1 = false;
+          SCORE += SCORE_UNIT;
+        }
+      } else if (bricks[r][c].hit2) {
         if (
           ball.y + ball.radius > bricks[r][c].y &&
           ball.x + ball.radius > bricks[r][c].x &&
@@ -208,7 +237,7 @@ function ballBricksCollision() {
         ) {
           brickHit.play();
           ball.dy = -ball.dy;
-          bricks[r][c].status = false;
+          bricks[r][c].hit2 = false;
           SCORE += SCORE_UNIT;
         }
       }
@@ -267,18 +296,22 @@ function levelUp() {
 
   for (let r = 0; r < brick.row; r++) {
     for (let c = 0; c < brick.column; c++) {
-      isLevelDone = isLevelDone && !bricks[r][c].status;
+      isLevelDone = isLevelDone && !bricks[r][c].hit2;
     }
   }
 
   if (isLevelDone) {
     if (LEVEL > MAX_LEVEL) {
-      //WE DISPLAY THE WIN DIV
       compeleGame.style.display = "block";
-      //WE SET THE LIFE TO LOCAL STORAGE  FOR THE NEXT LEVEL
-      localStorage.setItem("life", LIFE);
-      //WE SET THE SCORE TO LOCAL STORAGE FOR THE NEXT LEVEL
-      localStorage.setItem("score", SCORE);
+      window.addEventListener("keydown", () => {
+        if (event.keyCode === 13) {
+          location.reload();
+        } else if (event.keyCode === 32) {
+          location.reload();
+        } else {
+          return;
+        }
+      });
       GAME_OVER = true;
     }
     winAudio.play();
@@ -332,11 +365,10 @@ function draw() {
     cvs.width / 2 - 30,
     5
   );
-
   //draw text
   ctx.fillStyle = "#FFF";
   ctx.font = "25px Germania One";
-  ctx.fillText("1-", cvs.width / 2, 25);
+  ctx.fillText("2-", cvs.width / 2, 25);
 }
 
 function update() {
