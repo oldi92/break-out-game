@@ -2,18 +2,18 @@
 
 Object Oriented break out game created with canvas, vanilla javacript!
 
-LEVEL 1
-1-1
-1-2
-1-3
-1-4
-1-5
+LEVEL 1 <br/>
+1-1 <br/>
+1-2<br/>
+1-3<br/>
+1-4<br/>
+1-5<br/>
 
-LEVEL 2
-2-1
-2-2
-2-3
-2-4
-2-5
+LEVEL 2<br/>
+2-1<br/>
+2-2<br/>
+2-3<br/>
+2-4<br/>
+2-5<br/>
 
 LINK --> https://oldi92.github.io/break-out-game/
