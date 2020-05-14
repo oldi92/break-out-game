@@ -16,10 +16,6 @@ canvas {
   height: 100%;
   display: none;
 }
-a {
-  text-decoration: none;
-  color: inherit;
-}
 #win img {
   margin-top: 9rem;
   width: 10rem;

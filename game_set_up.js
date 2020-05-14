@@ -4,22 +4,27 @@ const ctx = cvs.getContext("2d");
 
 //GET THE WIN DIV
 const compeleGame = document.getElementById("win");
-compeleGame.addEventListener("click", () => location.reload());
+compeleGame
+  ? compeleGame.addEventListener("click", () => location.reload())
+  : null;
 
 //GET THE LOSE DIV
 const loseGame = document.getElementById("lose");
-loseGame.addEventListener("click", () => location.reload());
+loseGame ? loseGame.addEventListener("click", () => location.reload()) : null;
 
 //DEFINE THE VARIABLES
-const PADDLE_WIDTH = 100;
-const PADDLE_HEIGHT = 20;
+let PADDLE_WIDTH = 80;
+const PADDLE_HEIGHT = 15;
 const PADDLE_MARGIN_BOTTOM = 50;
 let leftArrow;
 let rightArrow;
-const BALL_RADIUS = 8;
+const BALL_RADIUS = 6;
 let SCORE_UNIT = 10;
 let GAME_OVER = false;
 let MAX_LEVEL = 4;
+let secondBall = null;
+let TOP_SCORE = 0;
+let PADDLE_SHORT = false;
 
 //SET BACKGROUND IMAGE
 image = new Image();
@@ -44,6 +49,10 @@ imageLife.src = "./images/life.png";
 //SET SCORE IMAGE
 imageScore = new Image();
 imageScore.src = "./images/trophy.png";
+
+//SET MYSTERY BOX IMAGE
+imageMystery = new Image();
+imageMystery.src = "./images/mysteryBox.png";
 
 //SET THE SOUNDS
 const wallHit = new Audio();
@@ -78,7 +87,7 @@ document.addEventListener("keyup", () => {
   }
 });
 
-//PADDLE CLASS
+//********************PADDLE CLASS********************
 class Paddle {
   constructor() {
     this.x = cvs.width / 2 - PADDLE_WIDTH / 2;
@@ -104,7 +113,7 @@ class Paddle {
 
 let paddle = new Paddle();
 
-//LEVEL UP FUNCTION
+//********************LEVEL UP FUNCTION********************
 function levelUp() {
   let isLevelDone = true;
 
@@ -156,7 +165,7 @@ function gameOver() {
   }
 }
 
-///CLASS STATS
+///******************** STATS CLASS ********************
 class STATS {
   constructor() {
     //score variables
@@ -218,7 +227,7 @@ class STATS {
 
 let stats = new STATS();
 
-// CLASS BRICKS
+//******************** CLASS BRICKS********************
 class Bricks {
   constructor() {
     this.brick = {
@@ -258,7 +267,6 @@ class Bricks {
   draw() {
     for (let r = 0; r < this.brick.row; r++) {
       for (let c = 0; c < this.brick.column; c++) {
-        console.log(this.bricks[r][c].hit - this.bricks[r][c].hit);
         if (
           this.maxHit - this.bricks[r][c].hit === 1 &&
           this.bricks[r][c].hit > 0
@@ -285,7 +293,7 @@ class Bricks {
 }
 let brick = new Bricks();
 
-//BALL CLASS
+//********************BALL CLASS********************
 class Ball {
   constructor() {
     this.x = cvs.width / 2;
@@ -294,11 +302,12 @@ class Ball {
     this.speed = 3;
     this.dx = 3 * (Math.random() * 2 - 1);
     this.dy = -3;
+    this.color = "#363636";
   }
   draw() {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#363636";
+    ctx.fillStyle = this.color;
     ctx.fill();
     ctx.lineWidth = 3;
     ctx.strokeStyle = "#2e2e2e";
@@ -354,12 +363,23 @@ class Ball {
             this.y - this.radius < brick.bricks[r][c].y + brick.brick.height &&
             this.x - this.radius < brick.bricks[r][c].x + brick.brick.width
           ) {
-            console.log(brick.bricks[r][c].hit);
-
             brickHit.play();
             this.dy = -this.dy;
             brick.bricks[r][c].hit--;
             stats.score += SCORE_UNIT;
+            if (brick.bricks[r][c].hit < 1 && stats.gameLevel > 2) {
+              action.counter--;
+              console.log(action.counter);
+              if (action.counter === 0) {
+                action.counter = 4;
+                //start random action generator
+                animationFallDown = new AnimationFallDown(
+                  brick.bricks[r][c].x,
+                  brick.bricks[r][c].y
+                );
+                console.log("RANDOM");
+              }
+            }
           }
         }
       }
@@ -374,3 +394,101 @@ class Ball {
   }
 }
 let ball = new Ball();
+
+//********* CLASS * ANIMATION  ********************
+
+//create the animation fall down of the random action
+class AnimationFallDown {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = BALL_RADIUS + 6;
+    this.speed = 3;
+    this.dy = 1.5;
+  }
+  draw() {
+    ctx.drawImage(imageMystery, this.x, this.y, 30, 30);
+  }
+  move() {
+    console.log("Animation fal moving");
+    this.y += this.dy;
+  }
+  paddleCollision() {
+    if (
+      this.y + 30 > paddle.y &&
+      this.y < paddle.y + paddle.height &&
+      this.x + this.radius > paddle.x &&
+      this.x < paddle.x + paddle.width
+    ) {
+      console.log("HIT THE PADDLE");
+      winAudio.play();
+      action.actionGenerator();
+      animationFallDown = null;
+    }
+  }
+  wallBottomCollision() {
+    if (this.y + 30 > cvs.height) {
+      console.log("BOTTOM PAS");
+      animationFallDown = null;
+    }
+  }
+}
+let animationFallDown = null;
+
+//************* CLASS * ACTION *************
+// create random action to manipulate the player
+class Action {
+  constructor() {
+    this.counter = 4;
+    this.secondBall = "";
+  }
+  actionGenerator() {
+    const randomNuber = Math.round(Math.random()) + 1;
+    if (randomNuber === 1) {
+      this.paddleShort();
+      PADDLE_SHORT = true;
+    } else if (randomNuber === 2) {
+      this.extraBall();
+    }
+    console.log("GENERATOR", randomNuber);
+  }
+  paddleShort() {
+    console.log("SHORTING");
+
+    if (paddle.width > 44) {
+      paddle.width -= 0.5;
+    } else {
+      PADDLE_SHORT = false;
+    }
+
+    setTimeout(() => this.paddleNormal(), 10000);
+  }
+  paddleNormal() {
+    console.log("NORMAL");
+    if (paddle.width < 80) {
+      paddle.width += 0.5;
+    } else return;
+  }
+  extraBall() {
+    // create new ball with ball constractor
+    secondBall = new Ball();
+    //  change the color of the new ball
+    secondBall.color = "#ea2d23";
+    // change the bottom collision of copy ball to avoid lose life
+    secondBall.wallCollision = function () {
+      if (this.x + this.radius > cvs.width) {
+        wallHit.play();
+        this.dx = -this.dx;
+      } else if (this.y - this.radius < 0) {
+        wallHit.play();
+        this.dy = -this.dy;
+      } else if (this.x - this.radius < 0) {
+        wallHit.play();
+        this.dx = -this.dx;
+      }
+    };
+    setTimeout(() => (secondBall = null), 15000);
+  }
+}
+
+let action = new Action();
