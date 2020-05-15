@@ -18,7 +18,7 @@ const PADDLE_HEIGHT = 15;
 const PADDLE_MARGIN_BOTTOM = 50;
 let leftArrow;
 let rightArrow;
-const BALL_RADIUS = 6;
+const BALL_RADIUS = 5;
 let SCORE_UNIT = 10;
 let GAME_OVER = false;
 let MAX_LEVEL = 4;
@@ -357,27 +357,127 @@ class Ball {
     for (let r = 0; r < brick.brick.row; r++) {
       for (let c = 0; c < brick.brick.column; c++) {
         if (brick.bricks[r][c].hit > 0) {
+          //IF THE BALL HIT THE BOTTOM
           if (
-            this.y + this.radius > brick.bricks[r][c].y &&
-            this.x + this.radius > brick.bricks[r][c].x &&
             this.y - this.radius < brick.bricks[r][c].y + brick.brick.height &&
-            this.x - this.radius < brick.bricks[r][c].x + brick.brick.width
+            this.x + this.radius > brick.bricks[r][c].x + 5 &&
+            this.x - this.radius <
+              brick.bricks[r][c].x + brick.brick.width - 5 &&
+            this.y + this.radius > brick.bricks[r][c].y + 5
           ) {
-            brickHit.play();
+            //we increase the y
             this.dy = -this.dy;
+            console.log("HIT BOTTOM");
+            //playsound
+            brickHit.play();
+            //decrease the hit left
             brick.bricks[r][c].hit--;
+            //we increase the score
             stats.score += SCORE_UNIT;
+            //we check if the hit left are smaller than 1
             if (brick.bricks[r][c].hit < 1 && stats.gameLevel > 2) {
               action.counter--;
               console.log(action.counter);
+              //we check if the counter of actions is zero
               if (action.counter === 0) {
+                //we reset counter
                 action.counter = 4;
                 //start random action generator
                 animationFallDown = new AnimationFallDown(
                   brick.bricks[r][c].x,
                   brick.bricks[r][c].y
                 );
-                console.log("RANDOM");
+              }
+            }
+          } else if (
+            this.y + this.radius > brick.bricks[r][c].y &&
+            this.y - this.radius < brick.bricks[r][c].y + brick.brick.height &&
+            this.x - this.radius < brick.bricks[r][c].x + brick.brick.width &&
+            this.x + this.radius > brick.bricks[r][c].x + brick.brick.width - 5
+          ) {
+            //we increase the x
+            this.dx = -this.dx;
+            console.log("HIT RIGHT");
+            //playsound
+            brickHit.play();
+            //decrease the hit left
+            brick.bricks[r][c].hit--;
+            //we increase the score
+            stats.score += SCORE_UNIT;
+            //we check if the hit left are smaller than 1
+            if (brick.bricks[r][c].hit < 1 && stats.gameLevel > 2) {
+              action.counter--;
+              console.log(action.counter);
+              //we check if the counter of actions is zero
+              if (action.counter === 0) {
+                //we reset counter
+                action.counter = 4;
+                //start random action generator
+                animationFallDown = new AnimationFallDown(
+                  brick.bricks[r][c].x,
+                  brick.bricks[r][c].y
+                );
+              }
+            }
+          } else if (
+            this.x + this.radius > brick.bricks[r][c].x + 5 &&
+            this.y + this.radius > brick.bricks[r][c].y &&
+            this.x - this.radius <
+              brick.bricks[r][c].x + brick.brick.width - 5 &&
+            this.y - this.radius < brick.bricks[r][c].y + 5
+          ) {
+            //we decrease the y
+            this.dy = -this.dy;
+            console.log("HIT TOP");
+            //playsound
+            brickHit.play();
+            //decrease the hit left
+            brick.bricks[r][c].hit--;
+            //we increase the score
+            stats.score += SCORE_UNIT;
+            //we check if the hit left are smaller than 1
+            if (brick.bricks[r][c].hit < 1 && stats.gameLevel > 2) {
+              action.counter--;
+              console.log(action.counter);
+              //we check if the counter of actions is zero
+              if (action.counter === 0) {
+                //we reset counter
+                action.counter = 4;
+                //start random action generator
+                animationFallDown = new AnimationFallDown(
+                  brick.bricks[r][c].x,
+                  brick.bricks[r][c].y
+                );
+              }
+            }
+          } else if (
+            this.x + this.radius > brick.bricks[r][c].x &&
+            this.y + this.radius > brick.bricks[r][c].y &&
+            this.y - this.radius < brick.bricks[r][c].y + brick.brick.height &&
+            this.x - this.radius < brick.bricks[r][c].x + 5
+          ) {
+            //we decrease the x
+            this.dx = -this.dx;
+            console.log("HIT LEFT");
+            //playsound
+            brickHit.play();
+            //decrease the hit left
+            brick.bricks[r][c].hit--;
+            //we increase the score
+            stats.score += SCORE_UNIT;
+            //we check if the hit left are smaller than 1
+            if (brick.bricks[r][c].hit < 1 && stats.gameLevel > 2) {
+              action.counter--;
+              console.log(action.counter);
+              //we check if the counter of actions is zero
+              if (action.counter === 0) {
+                //we reset counter
+                action.counter = 4;
+                //start random action generator
+                animationFallDown = new AnimationFallDown(
+                  brick.bricks[r][c].x,
+                  brick.bricks[r][c].y
+                );
               }
             }
           }
